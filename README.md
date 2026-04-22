@@ -1,6 +1,6 @@
 # pokebenchmark-dashboard
 
-React + TypeScript dashboard for the [pokebenchmark](https://github.com/ShardulAgg/pokebenchmark-platform) benchmarking orchestrator.
+React + TypeScript dashboard for the [pokebenchmark](https://github.com/ConvoSearch/pokebenchmark-platform) benchmarking orchestrator.
 
 ## Features
 
