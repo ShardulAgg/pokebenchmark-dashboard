@@ -91,7 +91,27 @@ export default function RunDetail() {
 
       {run.model_provider === 'manual' ? (
         (run.status === 'running' || run.status === 'pending') ? (
-          <ManualControls runId={run.id} game={run.game} />
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                window.open(
+                  `/play/${run.id}`,
+                  `play_${run.id}`,
+                  'popup=yes,width=720,height=480,resizable=yes'
+                )
+              }}
+              style={{
+                padding: '6px 12px',
+                marginBottom: 12,
+                fontFamily: 'monospace',
+                cursor: 'pointer',
+              }}
+            >
+              ▶ Play in Window
+            </button>
+            <ManualControls runId={run.id} game={run.game} />
+          </>
         ) : (
           <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
             This manual run is {run.status}. Controls are disabled.
