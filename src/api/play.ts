@@ -33,6 +33,7 @@ export interface PlayConnection {
   sendKeyDown(k: GbaKey): void
   sendKeyUp(k: GbaKey): void
   sendResetKeys(): void
+  sendSpeed(v: number): void
 }
 
 export function openPlayConnection(
@@ -82,5 +83,8 @@ export function openPlayConnection(
     sendKeyDown: (k) => send({ t: 'down', k }),
     sendKeyUp: (k) => send({ t: 'up', k }),
     sendResetKeys: () => send({ t: 'reset_keys' }),
+    sendSpeed: (v) => send({ t: 'speed', v }),
   }
 }
+
+export const FAST_FORWARD_MULTIPLIER = 4

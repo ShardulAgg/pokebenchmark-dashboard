@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { KEY_MAP, openPlayConnection, type PlayConnection } from '../api/play'
+import { KEY_MAP, openPlayConnection, FAST_FORWARD_MULTIPLIER, type PlayConnection } from '../api/play'
 
 interface Props {
   runId: string
@@ -36,6 +36,12 @@ export default function PlayCanvas({ runId, onClosed, onState }: Props) {
     connRef.current = conn
 
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault()
+        if (e.repeat) return
+        conn.sendSpeed(FAST_FORWARD_MULTIPLIER)
+        return
+      }
       if (e.repeat) return
       const k = KEY_MAP[e.key]
       if (!k) return
@@ -45,6 +51,11 @@ export default function PlayCanvas({ runId, onClosed, onState }: Props) {
       conn.sendKeyDown(k)
     }
     const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault()
+        conn.sendSpeed(1)
+        return
+      }
       const k = KEY_MAP[e.key]
       if (!k) return
       e.preventDefault()
@@ -54,6 +65,7 @@ export default function PlayCanvas({ runId, onClosed, onState }: Props) {
     const onBlur = () => {
       heldRef.current.clear()
       conn.sendResetKeys()
+      conn.sendSpeed(1)
     }
 
     window.addEventListener('keydown', onKeyDown)

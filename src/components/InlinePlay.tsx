@@ -61,7 +61,7 @@ export default function InlinePlay({ runId }: Props) {
           marginTop: 8, fontSize: 11, color: 'var(--text-muted)',
           fontFamily: 'monospace',
         }}>
-          Arrows: D-pad &middot; Z: B &middot; X: A &middot; A/S: L/R &middot; Enter: Start &middot; Shift: Select
+          Arrows: D-pad &middot; Z: B &middot; X: A &middot; A/S: L/R &middot; Enter: Start &middot; Shift: Select &middot; Space: hold for 4× fast-forward
         </div>
       </div>
       <StatePanel state={state} />
