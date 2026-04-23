@@ -8,13 +8,10 @@ import Comparison from './pages/Comparison'
 import Games from './pages/Games'
 import GameDetail from './pages/GameDetail'
 import Skills from './pages/Skills'
-import Play from './pages/Play'
 
 export default function App() {
   return (
     <Routes>
-      {/* Chrome-less popout route — must sit OUTSIDE the Layout wrapper */}
-      <Route path="/play/:runId" element={<Play />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/games" element={<Games />} />

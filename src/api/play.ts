@@ -39,6 +39,7 @@ export function openPlayConnection(
   runId: string,
   onFrame: (bitmap: ImageBitmap) => void,
   onClose: () => void,
+  onState?: (data: Record<string, unknown>) => void,
 ): PlayConnection {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws'
   const ws = new WebSocket(`${proto}://${location.host}/ws/play/${runId}`)
@@ -56,6 +57,13 @@ export function openPlayConnection(
         onFrame(bmp)
       } catch {
         /* ignore decode errors on occasional corrupt frames */
+      }
+    } else if (typeof e.data === 'string' && onState) {
+      try {
+        const msg = JSON.parse(e.data)
+        if (msg?.t === 'state' && msg.data) onState(msg.data)
+      } catch {
+        /* malformed JSON — ignore */
       }
     }
   })

@@ -4,16 +4,19 @@ import { KEY_MAP, openPlayConnection, type PlayConnection } from '../api/play'
 interface Props {
   runId: string
   onClosed: () => void
+  onState?: (data: Record<string, unknown>) => void
 }
 
-export default function PlayCanvas({ runId, onClosed }: Props) {
+export default function PlayCanvas({ runId, onClosed, onState }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const connRef = useRef<PlayConnection | null>(null)
   const heldRef = useRef<Set<string>>(new Set())
-  // Store onClosed in a ref so its identity (which changes every parent
-  // render) does not retrigger this effect and tear down the WebSocket.
+  // Stabilize callback identity via refs so parent re-renders don't retrigger
+  // this effect and tear down the WebSocket.
   const onClosedRef = useRef(onClosed)
   onClosedRef.current = onClosed
+  const onStateRef = useRef(onState)
+  onStateRef.current = onState
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -28,6 +31,7 @@ export default function PlayCanvas({ runId, onClosed }: Props) {
         bmp.close()
       },
       () => onClosedRef.current(),
+      (data) => onStateRef.current?.(data),
     )
     connRef.current = conn
 

@@ -2,11 +2,13 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { LiveConnection } from '../api/websocket'
+import { stopPlay } from '../api/play'
 import type { Run, Decision, LiveUpdate } from '../types'
 import GameStream from '../components/GameStream'
 import StatePanel from '../components/StatePanel'
 import DecisionLog from '../components/DecisionLog'
 import ManualControls from '../components/ManualControls'
+import InlinePlay from '../components/InlinePlay'
 
 export default function RunDetail() {
   const { runId } = useParams<{ runId: string }>()
@@ -16,7 +18,24 @@ export default function RunDetail() {
   const [decisions, setDecisions] = useState<Decision[]>([])
   const [error, setError] = useState<string | null>(null)
   const [stopping, setStopping] = useState(false)
+  const [mode, setMode] = useState<'normal' | 'ws'>('normal')
+  const [switching, setSwitching] = useState(false)
   const liveRef = useRef<LiveConnection | null>(null)
+
+  const switchTo = async (newMode: 'normal' | 'ws') => {
+    if (newMode === mode || !run) return
+    setSwitching(true)
+    try {
+      if (mode === 'ws') {
+        // Stop the active play session before unmounting so the next /press
+        // call from ManualControls doesn't trip the 409 conflict guard.
+        await stopPlay(run.id).catch(() => {})
+      }
+      setMode(newMode)
+    } finally {
+      setSwitching(false)
+    }
+  }
 
   useEffect(() => {
     if (!runId) return
@@ -92,25 +111,48 @@ export default function RunDetail() {
       {run.model_provider === 'manual' ? (
         (run.status === 'running' || run.status === 'pending') ? (
           <>
-            <button
-              type="button"
-              onClick={() => {
-                window.open(
-                  `/play/${run.id}`,
-                  `play_${run.id}`,
-                  'popup=yes,width=720,height=480,resizable=yes'
-                )
-              }}
-              style={{
-                padding: '6px 12px',
-                marginBottom: 12,
-                fontFamily: 'monospace',
-                cursor: 'pointer',
-              }}
-            >
-              ▶ Play in Window
-            </button>
-            <ManualControls runId={run.id} game={run.game} />
+            <div style={{ display: 'flex', gap: 0, marginBottom: 12 }}>
+              <button
+                type="button"
+                onClick={() => switchTo('normal')}
+                disabled={switching}
+                style={{
+                  padding: '6px 14px',
+                  fontFamily: 'monospace',
+                  cursor: switching ? 'not-allowed' : 'pointer',
+                  border: '1px solid var(--border)',
+                  borderRight: 'none',
+                  borderRadius: '4px 0 0 4px',
+                  background: mode === 'normal' ? 'var(--accent)' : 'var(--bg)',
+                  color: mode === 'normal' ? '#fff' : 'var(--text)',
+                  opacity: switching ? 0.6 : 1,
+                }}
+              >
+                Normal
+              </button>
+              <button
+                type="button"
+                onClick={() => switchTo('ws')}
+                disabled={switching}
+                style={{
+                  padding: '6px 14px',
+                  fontFamily: 'monospace',
+                  cursor: switching ? 'not-allowed' : 'pointer',
+                  border: '1px solid var(--border)',
+                  borderRadius: '0 4px 4px 0',
+                  background: mode === 'ws' ? 'var(--accent)' : 'var(--bg)',
+                  color: mode === 'ws' ? '#fff' : 'var(--text)',
+                  opacity: switching ? 0.6 : 1,
+                }}
+              >
+                WS 60fps
+              </button>
+            </div>
+            {mode === 'normal' ? (
+              <ManualControls runId={run.id} game={run.game} />
+            ) : (
+              <InlinePlay runId={run.id} />
+            )}
           </>
         ) : (
           <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
