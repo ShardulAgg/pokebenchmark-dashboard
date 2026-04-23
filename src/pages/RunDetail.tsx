@@ -9,6 +9,7 @@ import StatePanel from '../components/StatePanel'
 import DecisionLog from '../components/DecisionLog'
 import ManualControls from '../components/ManualControls'
 import InlinePlay from '../components/InlinePlay'
+import RecordingsList from '../components/RecordingsList'
 
 export default function RunDetail() {
   const { runId } = useParams<{ runId: string }>()
@@ -170,6 +171,11 @@ export default function RunDetail() {
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: 28 }}>
+        <h2 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 600 }}>Recordings</h2>
+        <RecordingsList runId={run.id} />
+      </div>
     </div>
   )
 }
