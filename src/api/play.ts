@@ -41,7 +41,7 @@ export function openPlayConnection(
   onClose: () => void,
 ): PlayConnection {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws'
-  const ws = new WebSocket(`${proto}://${location.host}/api/play/${runId}/ws`)
+  const ws = new WebSocket(`${proto}://${location.host}/ws/play/${runId}`)
   ws.binaryType = 'blob'
 
   ws.addEventListener('message', async (e) => {
