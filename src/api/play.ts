@@ -44,6 +44,11 @@ export function openPlayConnection(
   const ws = new WebSocket(`${proto}://${location.host}/ws/play/${runId}`)
   ws.binaryType = 'blob'
 
+  // Track explicit-close so StrictMode double-invoke (which closes the
+  // in-flight WS before handshake completes) doesn't surface as an error
+  // to the parent. Server-side close still fires onClose.
+  let explicitlyClosed = false
+
   ws.addEventListener('message', async (e) => {
     if (e.data instanceof Blob) {
       try {
@@ -55,8 +60,9 @@ export function openPlayConnection(
     }
   })
 
-  ws.addEventListener('close', onClose)
-  ws.addEventListener('error', onClose)
+  const maybeNotifyClose = () => { if (!explicitlyClosed) onClose() }
+  ws.addEventListener('close', maybeNotifyClose)
+  ws.addEventListener('error', maybeNotifyClose)
 
   const send = (obj: object) => {
     if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj))
@@ -64,7 +70,7 @@ export function openPlayConnection(
 
   return {
     ws,
-    close: () => ws.close(),
+    close: () => { explicitlyClosed = true; ws.close() },
     sendKeyDown: (k) => send({ t: 'down', k }),
     sendKeyUp: (k) => send({ t: 'up', k }),
     sendResetKeys: () => send({ t: 'reset_keys' }),
