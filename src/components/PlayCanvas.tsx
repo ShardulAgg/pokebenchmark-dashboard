@@ -10,6 +10,10 @@ export default function PlayCanvas({ runId, onClosed }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const connRef = useRef<PlayConnection | null>(null)
   const heldRef = useRef<Set<string>>(new Set())
+  // Store onClosed in a ref so its identity (which changes every parent
+  // render) does not retrigger this effect and tear down the WebSocket.
+  const onClosedRef = useRef(onClosed)
+  onClosedRef.current = onClosed
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -23,7 +27,7 @@ export default function PlayCanvas({ runId, onClosed }: Props) {
         ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height)
         bmp.close()
       },
-      () => onClosed(),
+      () => onClosedRef.current(),
     )
     connRef.current = conn
 
@@ -58,7 +62,7 @@ export default function PlayCanvas({ runId, onClosed }: Props) {
       window.removeEventListener('blur', onBlur)
       conn.close()
     }
-  }, [runId, onClosed])
+  }, [runId])
 
   return (
     <canvas
